@@ -6,11 +6,12 @@ import { client } from '@/openapi.config';
 import { components } from '@/openapi/schema';
 import { CurrencyType } from '@repo/types';
 import { Button } from '@repo/ui/components';
-import { EditIcon, Plus } from '@repo/ui/components/icons';
+import { EditIcon, Plus, UserPlus2Icon } from '@repo/ui/components/icons';
 import NoItems from '../../components/no-items';
-import UpdateEventDialog from '../../components/update-event-dialog';
-import EditExpenseDialog from './components/edit-expense-dialog';
+import AddUserDialog from './components/add-user-dialog';
 import ExpenseList from './components/expense-list';
+import UpdateEventDialog from './components/update-event-dialog';
+import UpdateExpenseDialog from './components/update-expense-dialog';
 
 type EventDetailProps = {
   params: {
@@ -38,12 +39,15 @@ const EventDetail = async ({ params }: EventDetailProps) => {
             title={data.title}
             currency={data.currency}
           >
-            <EditIcon />
+            <EditIcon className="hover:text-blue-400" />
           </UpdateEventDialog>
+          <AddUserDialog>
+            <UserPlus2Icon className="hover:text-blue-400" />
+          </AddUserDialog>
         </div>
         <p>
           {data.member.map(({ id, name }, index) => {
-            const withSeparator = index === 0 ? name : ` | ${name}`;
+            const withSeparator = index === 0 ? name : `・${name}`;
             return <span key={id}>{withSeparator}</span>;
           })}
         </p>
@@ -52,24 +56,28 @@ const EventDetail = async ({ params }: EventDetailProps) => {
           {data.totalExpense ? formatNumber(data.totalExpense) : 0}
         </p>
       </div>
-      <div className="mt-6">
+      <div className="my-6">
         {data.expenses.length > 0 ? (
           <>
             <ul className="space-y-4">
               {data.expenses.map((expense) => (
                 <li key={expense.id}>
-                  <EditExpenseDialog expense={expense} member={data.member}>
+                  <UpdateExpenseDialog
+                    eventId={eventId}
+                    expense={expense}
+                    member={data.member}
+                  >
                     <div>
                       <ExpenseList
                         expense={expense}
                         currencySymbol={currencySymbol}
                       />
                     </div>
-                  </EditExpenseDialog>
+                  </UpdateExpenseDialog>
                 </li>
               ))}
             </ul>
-            <CreateExpenseDialog members={data.member}>
+            <CreateExpenseDialog eventId={eventId} members={data.member}>
               <Plus className="fixed bottom-5 right-5 z-50 rounded-full shadow-xl p-1 w-10 h-10 bg-foreground hover:opacity-85 text-background cursor-pointer" />
             </CreateExpenseDialog>
           </>
@@ -79,7 +87,7 @@ const EventDetail = async ({ params }: EventDetailProps) => {
             src="/expense.jpg"
             message="立て替え記録がありません。"
           >
-            <CreateExpenseDialog members={data.member}>
+            <CreateExpenseDialog eventId={eventId} members={data.member}>
               <Button
                 variant="outline"
                 className="flex mx-auto mt-6 cursor-pointer"
